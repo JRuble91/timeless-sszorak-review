@@ -462,7 +462,7 @@ dash.calc('walls', {
   inputs: ['wall_pulls'],
   fn: (wall_pulls) => ['tempest1', 'cyst_mid', 'cyst_late', 'enrage'].map((wall) => {
     const r = wall_pulls.filter((x) => x.wall === wall);
-    const hit = r.filter((x) => x.deaths > 0);
+    const hit = wall === 'enrage' ? r : r.filter((x) => x.deaths > 0);
     const worst = hit.reduce((a, x) => (!a || x.deaths > a.deaths ? x : a), null);
     return { wall, deaths: r.reduce((s, x) => s + x.deaths, 0), n_pulls: hit.length, n_ended: hit.filter((x) => x.ended).length, n_reached: r.length,
       n_chain: r.filter((x) => x.chain > 0).length, chain_deaths: r.reduce((s, x) => s + x.chain, 0), worst_pull: worst ? worst.pull : '', worst_deaths: worst ? worst.deaths : 0 };
@@ -762,7 +762,7 @@ function drawMap() {
     if (ui.focus && !hasKey(b, ui.focus)) continue;
     const t = lab.append('text').attr('x', x(b.start_s)).attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)').text(b.label);
     const tw = t.node().getComputedTextLength(); let x0 = Math.min(x(b.start_s), W - 4 - tw);
-    let lane = ends.findIndex((e) => x0 >= e + 8); if (lane < 0) lane = ends.indexOf(Math.min(...ends));
+    const lane = ends.findIndex((e) => x0 >= e + 8); if (lane < 0) { t.remove(); continue; }
     t.attr('x', x0).attr('y', 12 + lane * 13); ends[lane] = x0 + tw;
   }
   const xa = svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickValues(d3.range(0, maxT + 1, W < 500 ? 30 : 15)).tickSize(0).tickFormat(f2));
